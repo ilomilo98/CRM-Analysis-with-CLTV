@@ -31,7 +31,7 @@ pd.set_option('display.float_format', lambda x: '%.5f' % x)
 
 ##### Import Data ########
 # We will use 2010-2011 sheet in the Online Retail II excel ########
-df_ = pd.read_excel("/Users/ilaydakursun/Desktop/Bootcamp/Hafta 3/online_retail_II.xlsx", sheet_name="Year 2010-2011")
+df_ = pd.read_excel("/.../online_retail_II.xlsx", sheet_name="Year 2010-2011")
 df = df_.copy()  # Copy of DataFrame
 
 df.isnull().any()

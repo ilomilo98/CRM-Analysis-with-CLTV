@@ -30,8 +30,9 @@ pd.set_option('display.float_format', lambda x: '%.5f' % x)
 
 
 ##### Import Data ########
+
 # We will use 2010-2011 sheet in the Online Retail II excel ########
-df_ = pd.read_excel("/.../online_retail_II.xlsx", sheet_name="Year 2010-2011")
+df_ = pd.read_excel("/Users/ilaydakursun/Desktop/Bootcamp/Hafta 3/online_retail_II.xlsx", sheet_name="Year 2010-2011")
 df = df_.copy()  # Copy of DataFrame
 
 df.isnull().any()
@@ -70,15 +71,14 @@ cltv_df = df_uk.groupby('Customer ID').agg({'InvoiceDate': [lambda date: (date.m
 cltv_df.columns = cltv_df.columns.droplevel(0)
 cltv_df.columns = ['recency', 'T', 'frequency', 'monetary'] # T is age of clients
 
-cltv_df["monetary"] = cltv_df["monetary"] / cltv_df["frequency"] ##Average earnings per monetary purchase
+cltv_df["monetary"] = cltv_df["monetary"] / cltv_df["frequency"]
 
 cltv_df = cltv_df[(cltv_df['frequency'] > 1)]
 cltv_df = cltv_df[cltv_df["monetary"] > 0]
-cltv_df["recency"] = cltv_df["recency"] / 7 # Must be expressed in weekly terms
+cltv_df["recency"] = cltv_df["recency"] / 7 .
 cltv_df["T"] = cltv_df["T"] / 7
 
 cltv_df["frequency"] = cltv_df["frequency"].astype(int)
-
 ########################## BG-NBD MODEL ##########################
 
 bgf = BetaGeoFitter(penalizer_coef=0.001)
@@ -100,13 +100,13 @@ ggf.conditional_expected_average_profit(cltv_df['frequency'],
 cltv_df["expected_average_profit"] = ggf.conditional_expected_average_profit(cltv_df['frequency'],cltv_df['monetary'])
 
 
-###### Task 1:6 months CLTV Prediction ############## 
+###### Task 1: 1 ay ##############
 cltv = ggf.customer_lifetime_value(bgf,
                                    cltv_df['frequency'],
                                    cltv_df['recency'],
                                    cltv_df['T'],
                                    cltv_df['monetary'],
-                                   time=4, #4 HAFTA
+                                   time=1, #1 ay
                                    freq="W",  # T'nin frekans bilgisi.
                                    discount_rate=0.01)
 
@@ -118,15 +118,15 @@ cltv.sort_values(by="clv", ascending=False).head(50)
 cltv_final = cltv_df.merge(cltv, on="Customer ID", how="left")
 cltv_final.sort_values(by="clv", ascending=False).head(10)
 
-### 6 months ###
+# 6 AYLIK
 
 cltv = ggf.customer_lifetime_value(bgf,
                                    cltv_df['frequency'],
                                    cltv_df['recency'],
                                    cltv_df['T'],
                                    cltv_df['monetary'],
-                                   time=24,
-                                   freq="W",  
+                                   time=6, #6 ay
+                                   freq="W",  # T'nin frekans bilgisi.
                                    discount_rate=0.01)
 
 cltv.head()
@@ -138,55 +138,23 @@ cltv.sort_values(by="clv", ascending=False).head(50)
 cltv_final = cltv_df.merge(cltv, on="Customer ID", how="left")
 cltv_final.sort_values(by="clv", ascending=False).head(10)
 
-#### TASK 2: Calculate 1-month and 12-month CLTV for 2010-2011 UK customers. ###
-
-cltv = ggf.customer_lifetime_value(bgf,
-                                   cltv_df['frequency'],
-                                   cltv_df['recency'],
-                                   cltv_df['T'],
-                                   cltv_df['monetary'],
-                                   time=144,
-                                   freq="W",
-                                   discount_rate=0.01)
-
-cltv.head()
-cltv = cltv.reset_index()
-cltv.sort_values(by="clv", ascending=False).head(10)
+# GÖREV 2 : 2010-2011 UK müşterileri için 1 aylık ve 12 aylık CLTV hesaplayınız.
+# TASK 2
+# Farklı zaman periyotlarından oluşan CLTV analizi
+# 1 aylık CLTV'de en yüksek olan 10 kişi ile 12 aylık'taki en yüksek 10 kişiyi analiz ediniz.
+# Fark var mı? Varsa sizce neden olabilir?
 
 
-cltv_final = cltv_df.merge(cltv, on="Customer ID", how="left")
-cltv_final.sort_values(by="clv", ascending=False).head(10)
-
-### # Top 10 people with 1 month cltv####
-bgf.predict(4,
-            cltv_df['frequency'],
-            cltv_df['recency'],
-            cltv_df['T']).sort_values(ascending=False).head(10)
-
-cltv_df["expected_purc_1_month"] = bgf.predict(4,
-                                               cltv_df['frequency'],
-                                               cltv_df['recency'],
-                                               cltv_df['T'])
-
-
-##### 12 month analys. ####
-bgf.predict(4*12,
-            cltv_df['frequency'],
-            cltv_df['recency'],
-            cltv_df['T']).sort_values(ascending=False).head(10)
-
-cltv_df["expected_purc_12_month"] = bgf.predict(4*12,
-                                               cltv_df['frequency'],
-                                               cltv_df['recency'],
-                                               cltv_df['T'])
-
+# Sıfırdan model kurulmasına gerek yoktur.
+# Önceki soruda oluşturulan model üzerinden ilerlenebilir.
+#12 aylık
 cltv = ggf.customer_lifetime_value(bgf,
                                    cltv_df['frequency'],
                                    cltv_df['recency'],
                                    cltv_df['T'],
                                    cltv_df['monetary'],
                                    time=12,
-                                   freq="W",  
+                                   freq="W",  # T'nin frekans bilgisi.
                                    discount_rate=0.01)
 
 cltv.head()
@@ -199,10 +167,47 @@ cltv.sort_values(by="clv", ascending=False).head(10)
 cltv_final = cltv_df.merge(cltv, on="Customer ID", how="left")
 cltv_final.sort_values(by="clv", ascending=False).head(10)
 
-cltv_final.sort_values(by="expected_purc_1_month", ascending=False).head(10)
-cltv_final.sort_values(by="expected_purc_12_month", ascending=False).head(10)
+# 12 ay'ın gözlem değerlerinde CLTV ÇOK YÜKSEK
 
-##### TASK 3: Creating segments ######
+# 1 aylık cltv en yüksek 10 kişi  analiz et
+
+bgf.predict(4,
+            cltv_df['frequency'],
+            cltv_df['recency'],
+            cltv_df['T']).sort_values(ascending=False).head(10)
+
+
+cltv_df["expected_purc_1_month"] = bgf.predict(4,
+                                               cltv_df['frequency'],
+                                               cltv_df['recency'],
+                                               cltv_df['T'])
+
+
+
+cltv_df.sort_values("expected_purc_1_month", ascending=False).head(10)
+# 1 aylık gözlem de frequency değerinin etkisinin çok büyük olduğunu görülüyor
+
+
+# 12 aylık analiz et
+# 1 aylığa kıyaslarsak yaklaşık 12 kat arttığını görülüyor
+
+bgf.predict(4*12,
+            cltv_df['frequency'],
+            cltv_df['recency'],
+            cltv_df['T']).sort_values(ascending=False).head(10)
+
+
+cltv_df["expected_purc_12_month"] = bgf.predict(4*12,
+                                               cltv_df['frequency'],
+                                               cltv_df['recency'],
+                                               cltv_df['T'])
+
+
+
+cltv_df.sort_values("expected_purc_12_month", ascending=False).head(10)
+
+
+# GÖREV 3: Segmentlerin oluşturulması
 
 scaler = MinMaxScaler(feature_range=(0, 1))
 scaler.fit(cltv_final[["clv"]])
@@ -217,6 +222,3 @@ cltv_final.sort_values(by="clv", ascending=False).head(10)
 
 
 cltv_final.groupby("segment").agg({"count", "mean", "sum"})
-
-
-
